@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hossam Chat - المحادثات الفورية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0c1317;
+            color: #e9edef;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Modal Login */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 20, 26, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: #111b21;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid #222d34;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-box i {
+            font-size: 50px;
+            color: #00a884;
+            margin-bottom: 10px;
+        }
+
+        .login-box h2 {
+            margin-bottom: 5px;
+            font-size: 22px;
+            color: #fff;
+        }
+
+        .dev-credit {
+            font-size: 12px;
+            color: #00a884;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .login-box input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: #202c33;
+            border: 1px solid #2a3942;
+            border-radius: 8px;
+            color: #fff;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .login-box .file-label {
+            display: block;
+            background: #202c33;
+            border: 1px dashed #00a884;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #00a884;
+            margin-bottom: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .login-box .file-label:hover {
+            background: #1a262c;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            background: #00a884;
+            color: #111b21;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-box button:hover {
+            background: #008f6f;
+        }
+
+        /* App Layout */
+        .app-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            background-color: #111b21;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 30%;
+            min-width: 300px;
+            max-width: 450px;
+            border-left: 1px solid #222d34;
+            display: flex;
+            flex-direction: column;
+            background: #111b21;
+        }
+
+        .sidebar-header {
+            height: 60px;
+            background: #202c33;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-profile-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #6b7c85;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .search-box {
+            padding: 10px;
+            background: #111b21;
+            border-bottom: 1px solid #222d34;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-wrapper i {
+            position: absolute;
+            right: 12px;
+            color: #8696a0;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            padding: 8px 38px 8px 12px;
+            background: #202c33;
+            border: none;
+            border-radius: 8px;
+            color: #e9edef;
+            outline: none;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #222d34;
+            gap: 15px;
+        }
+
+        .chat-item:hover, .chat-item.active {
+            background: #2a3942;
+        }
+
+        .chat-item-details {
+            flex: 1;
+        }
+
+        .chat-item-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .chat-item-sub {
+            font-size: 13px;
+            color: #8696a0;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0b141a;
+            position: relative;
+        }
+
+        .chat-header {
+            height: 60px;
+            background: #202c33;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-image: radial-gradient(#222d34 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .message {
+            max-width: 65%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            align-self: flex-start;
+            background: #005c4b;
+            color: #e9edef;
+            border-top-right-radius: 0;
+        }
+
+        .message.received {
+            align-self: flex-end;
+            background: #202c33;
+            color: #e9edef;
+            border-top-left-radius: 0;
+        }
+
+        .message img, .message video {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .message audio {
+            width: 220px;
+            height: 35px;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #8696a0;
+            margin-top: 4px;
+            text-align: left;
+        }
+
+        .chat-footer {
+            min-height: 62px;
+            background: #202c33;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-footer input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            background: #2a3942;
+            border: none;
+            border-radius: 8px;
+            color: #e9edef;
+            outline: none;
+        }
+
+        .file-input-btn {
+            background: none;
+            border: none;
+            color: #8696a0;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .file-input-btn:hover {
+            color: #00a884;
+        }
+
+        .send-btn {
+            background: none;
+            border: none;
+            color: #00a884;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .empty-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #8696a0;
+        }
+
+        .empty-chat i {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                max-width: none;
+            }
+            .chat-area {
+                display: none;
+            }
+            .chat-area.active-mobile {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal Login -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="login-box">
+            <i class="fa-solid fa-comments"></i>
+            <h2>Hossam Chat</h2>
+            <div class="dev-credit">تطوير المهندس / محمد حسام محمد</div>
+            <input type="text" id="userIdInput" placeholder="أدخل معرف المستخدم الخاص بك (ID)">
+            <label class="file-label" for="profileImageInput" id="profileLabel">اختر صورة البروفيل (إلزامي ⚠️)</label>
+            <input type="file" id="profileImageInput" accept="image/*" style="display: none;" onchange="previewProfileImage(event)">
+            <button onclick="login()">دخول للموقع</button>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile-info">
+                    <div class="avatar" id="myAvatarContainer">U</div>
+                    <span id="myUserIdDisplay" style="font-weight: bold;">--</span>
+                </div>
+            </div>
+
+            <!-- مربع البحث الحقيقي في داتا بيز فايربيس -->
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchTargetInput" placeholder="ابحث عن اسم مستخدم حقيقي..." oninput="filterUsersList()">
+                </div>
+            </div>
+
+            <div class="chat-list" id="chatList">
+                <!-- المستخدمين الحقيقيين من الداتا بيز يظهرون هنا فقط -->
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chatArea">
+            <div class="empty-chat" id="emptyState">
+                <i class="fa-solid fa-comments"></i>
+                <h2>Hossam Chat</h2>
+                <p>اختر شخصاً مسجلاً من القائمة وابدأ المحادثة السرية.</p>
+            </div>
+
+            <div id="activeChatContainer" style="display: none; height: 100%; flex-direction: column;">
+                <div class="chat-header">
+                    <div class="user-profile-info">
+                        <button class="file-input-btn" onclick="closeMobileChat()" style="display: none;" id="backBtn"><i class="fa-solid fa-arrow-right"></i></button>
+                        <div class="avatar" id="targetAvatarContainer">T</div>
+                        <span id="targetUserIdDisplay" style="font-weight: bold;">Target</span>
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messagesContainer">
+                    <!-- الرسائل تُعرض هنا -->
+                </div>
+
+                <div class="chat-footer">
+                    <label for="mediaInput" class="file-input-btn" title="إرسال صورة، فيديو أو أغنية">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </label>
+                    <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" style="display: none;" onchange="sendMedia(event)">
+
+                    <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLmbnDcKiBUWta9N13JAUyCZ5_392_ZwI",
+            authDomain: "hhhhhhhh-20d12.firebaseapp.com",
+            projectId: "hhhhhhhh-20d12",
+            storageBucket: "hhhhhhhh-20d12.firebasestorage.app",
+            messagingSenderId: "706077547690",
+            appId: "1:706077547690:web:5487ff95ac1257543804d3",
+            measurementId: "G-FLZZM4FGGH"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let myUserId = '';
+        let myProfilePic = '';
+        let activeTargetId = '';
+        let chats = {}; 
+        let allRegisteredUsers = {}; // قائمة كل المستخدمين الحقيقيين من قاعدة البيانات
+
+        // فحص الجلسة المحفوظة تلقائياً
+        window.onload = function() {
+            const savedUserId = localStorage.getItem('hossam_logged_user');
+            const savedPic = localStorage.getItem('hossam_logged_pic');
+
+            if (savedUserId && savedPic) {
+                myUserId = savedUserId;
+                myProfilePic = savedPic;
+                
+                document.getElementById('loginModal').style.display = 'none';
+                loadDataFromLocal();
+
+                document.getElementById('myUserIdDisplay').innerText = myUserId;
+                document.getElementById('myAvatarContainer').innerHTML = `<img src="${myProfilePic}" alt="Profile">`;
+
+                initAppSession();
+            }
+        };
+
+        function saveDataToLocal() {
+            if (myUserId) {
+                localStorage.setItem('hossam_chats_' + myUserId, JSON.stringify(chats));
+            }
+        }
+
+        function loadDataFromLocal() {
+            if (myUserId) {
+                const savedChats = localStorage.getItem('hossam_chats_' + myUserId);
+                if (savedChats) chats = JSON.parse(savedChats);
+            }
+        }
+
+        function previewProfileImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    myProfilePic = e.target.result;
+                    document.getElementById('profileLabel').innerText = "تم اختيار الصورة بنجاح ✓";
+                    document.getElementById('profileLabel').style.color = "#00a884";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function login() {
+            const input = document.getElementById('userIdInput').value.trim();
+            if (!input) return alert('برجاء كتابة الـ ID الخاص بك');
+            if (!myProfilePic) return alert('صورة البروفيل إلزامية! يرجى اختيار صورة شخصية للاستمرار.');
+            
+            myUserId = input;
+
+            localStorage.setItem('hossam_logged_user', myUserId);
+            localStorage.setItem('hossam_logged_pic', myProfilePic);
+
+            loadDataFromLocal();
+
+            document.getElementById('myUserIdDisplay').innerText = myUserId;
+            document.getElementById('myAvatarContainer').innerHTML = `<img src="${myProfilePic}" alt="Profile">`;
+            document.getElementById('loginModal').style.display = 'none';
+
+            initAppSession();
+        }
+
+        async function initAppSession() {
+            try {
+                // تسجيل أو تحديث بيانات المستخدم الحالي في فايربيس
+                await db.collection("users").doc(myUserId).set({
+                    userId: myUserId,
+                    profilePic: myProfilePic,
+                    lastSeen: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            } catch (err) {
+                console.log("خطأ في حفظ المستخدم بـ فايربيس:", err);
+            }
+
+            listenToUsers();
+            listenToMessages();
+        }
+
+        // جلب المستخدمين الحقيقيين المسجلين فقط من الداتا بيز
+        function listenToUsers() {
+            db.collection("users").onSnapshot((snapshot) => {
+                allRegisteredUsers = {};
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.userId && data.userId !== myUserId) {
+                        allRegisteredUsers[data.userId] = data.profilePic;
+                    }
+                });
+                renderChatList();
+            });
+        }
+
+        // جلب الرسائل الخاصة والحقيقية الموجهة لك فقط
+        function listenToMessages() {
+            db.collection("messages")
+                .where("receiverId", "==", myUserId)
+                .onSnapshot((snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") {
+                            const msg = change.doc.data();
+                            const sender = msg.senderId;
+
+                            if (!chats[sender]) chats[sender] = [];
+                            const exists = chats[sender].some(m => m.timestamp === msg.timestamp && m.text === msg.text);
+                            if (!exists) {
+                                chats[sender].push(msg);
+                                saveDataToLocal();
+                                if (activeTargetId === sender) {
+                                    renderMessages();
+                                }
+                                renderChatList();
+                            }
+                        }
+                    });
+                });
+        }
+
+        function openChat(targetId) {
+            activeTargetId = targetId;
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('activeChatContainer').style.display = 'flex';
+            document.getElementById('targetUserIdDisplay').innerText = targetId;
+            
+            if (!chats[targetId]) chats[targetId] = [];
+
+            const targetPic = allRegisteredUsers[targetId];
+            const targetAvatarDiv = document.getElementById('targetAvatarContainer');
+            if (targetPic) {
+                targetAvatarDiv.innerHTML = `<img src="${targetPic}" alt="Profile">`;
+            } else {
+                targetAvatarDiv.innerText = targetId.charAt(0).toUpperCase();
+            }
+
+            if (window.innerWidth <= 768) {
+                document.getElementById('chatArea').classList.add('active-mobile');
+                document.getElementById('backBtn').style.display = 'inline-block';
+            }
+
+            renderMessages();
+        }
+
+        function closeMobileChat() {
+            document.getElementById('chatArea').classList.remove('active-mobile');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text || !activeTargetId) return;
+
+            const time = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+            const msgObj = { 
+                senderId: myUserId, 
+                receiverId: activeTargetId, 
+                text, 
+                type: 'text', 
+                timestamp: time,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            if (!chats[activeTargetId]) chats[activeTargetId] = [];
+            chats[activeTargetId].push(msgObj);
+            saveDataToLocal();
+
+            try {
+                await db.collection("messages").add(msgObj);
+            } catch (e) {
+                console.log("خطأ في إرسال الرسالة:", e);
+            }
+
+            input.value = '';
+            renderMessages();
+            renderChatList();
+        }
+
+        async function sendMedia(event) {
+            const file = event.target.files[0];
+            if (!file || !activeTargetId) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const mediaUrl = e.target.result;
+                let type = 'text';
+                if (file.type.startsWith('image/')) type = 'image';
+                else if (file.type.startsWith('video/')) type = 'video';
+                else if (file.type.startsWith('audio/')) type = 'audio';
+
+                const time = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+                const msgObj = { 
+                    senderId: myUserId, 
+                    receiverId: activeTargetId, 
+                    mediaUrl, 
+                    type, 
+                    timestamp: time,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (!chats[activeTargetId]) chats[activeTargetId] = [];
+                chats[activeTargetId].push(msgObj);
+                saveDataToLocal();
+
+                try {
+                    await db.collection("messages").add(msgObj);
+                } catch (err) {
+                    console.log("خطأ في إرسال الوسائط:", err);
+                }
+
+                renderMessages();
+                renderChatList();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderMessages() {
+            const container = document.getElementById('messagesContainer');
+            container.innerHTML = '';
+
+            const list = chats[activeTargetId] || [];
+            list.forEach(msg => {
+                const div = document.createElement('div');
+                const isSent = msg.senderId === myUserId;
+                div.className = `message ${isSent ? 'sent' : 'received'}`;
+
+                let contentHtml = '';
+                if (msg.type === 'image') {
+                    contentHtml = `<img src="${msg.mediaUrl}" alt="صورة">`;
+                } else if (msg.type === 'video') {
+                    contentHtml = `<video src="${msg.mediaUrl}" controls></video>`;
+                } else if (msg.type === 'audio') {
+                    contentHtml = `<audio src="${msg.mediaUrl}" controls></audio>`;
+                } else {
+                    contentHtml = `<div>${msg.text}</div>`;
+                }
+
+                div.innerHTML = `
+                    ${contentHtml}
+                    <div class="message-time">${msg.timestamp || ''}</div>
+                `;
+                container.appendChild(div);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // عرض وتصفية المستخدمين الحقيقيين في القائمة الجانبية بالبحث
+        function filterUsersList() {
+            renderChatList();
+        }
+
+        function renderChatList() {
+            const container = document.getElementById('chatList');
+            container.innerHTML = '';
+
+            const searchQuery = document.getElementById('searchTargetInput') ? document.getElementById('searchTargetInput').value.trim().toLowerCase() : '';
+
+            // تصفية المستخدمين بناءً على اسم البحث المكتوب
+            Object.keys(allRegisteredUsers).forEach(targetId => {
+                if (searchQuery && !targetId.toLowerCase().includes(searchQuery)) {
+                    return; // تخطي غير المطابق للبحث
+                }
+
+                const lastMsgArray = chats[targetId];
+                const lastMsgObj = lastMsgArray && lastMsgArray.length > 0 ? lastMsgArray[lastMsgArray.length - 1] : null;
+                let lastMsgText = 'انقر لبدء المحادثة';
+                if (lastMsgObj) {
+                    if (lastMsgObj.type === 'image') lastMsgText = '📷 صورة';
+                    else if (lastMsgObj.type === 'video') lastMsgText = '🎥 فيديو';
+                    else if (lastMsgObj.type === 'audio') lastMsgText = '🎵 صوت / أغنية';
+                    else lastMsgText = lastMsgObj.text;
+                }
+
+                const targetPic = allRegisteredUsers[targetId];
+                const avatarContent = targetPic ? `<img src="${targetPic}" alt="Profile">` : targetId.charAt(0).toUpperCase();
+
+                const item = document.createElement('div');
+                item.className = `chat-item ${targetId === activeTargetId ? 'active' : ''}`;
+                item.onclick = () => openChat(targetId);
+                item.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="chat-item-details">
+                        <div class="chat-item-name">${targetId}</div>
+                        <div class="chat-item-sub">${lastMsgText}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+    </script>
+</body>
+</html>
